@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.73.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Yassi.Mcp\Yassi.Mcp.csproj" />
+    <ProjectReference Include="..\Yassi.LlmClient\Yassi.LlmClient.csproj" />
+    <ProjectReference Include="..\Yassi.Contracts\Yassi.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

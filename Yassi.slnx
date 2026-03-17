@@ -1,0 +1,12 @@
+<Solution>
+  <Project Path="Yassi.Agents/Yassi.Agents.csproj" />
+  <Project Path="Yassi.Api/Yassi.Api.csproj" />
+  <Project Path="Yassi.Contracts/Yassi.Contracts.csproj" />
+  <Project Path="Yassi.Frontend/Yassi.Frontend.csproj" />
+  <Project Path="Yassi.Grains.Abs/Yassi.Grains.Abs.csproj" />
+  <Project Path="Yassi.Grains/Yassi.Grains.csproj" />
+  <Project Path="Yassi.LlmClient/Yassi.LlmClient.csproj" />
+  <Project Path="Yassi.Mcp/Yassi.Mcp.csproj" />
+  <Project Path="Yassi.Orchestrator/Yassi.Orchestrator.csproj" />
+  <Project Path="Yassi.Silo/Yassi.Silo.csproj" />
+</Solution>

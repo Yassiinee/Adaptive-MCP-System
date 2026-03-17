@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-Yassi.Silo-b3a4c4fb-69f3-48c6-b83f-e7284fafbb7c</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.4" />
+    <PackageReference Include="Microsoft.Orleans.Persistence.Memory" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Orleans.Server" Version="10.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Yassi.Grains\Yassi.Grains.csproj" />
+    <ProjectReference Include="..\Yassi.Contracts\Yassi.Contracts.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,6 @@
+@Yassi.Api_HostAddress = http://localhost:5250
+
+GET {{Yassi.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
