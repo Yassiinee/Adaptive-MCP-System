@@ -2,7 +2,7 @@
 
 > A production-ready, multi-agent AI chat system built with .NET C#, Microsoft Orleans, and MCP — your own scalable ChatGPT alternative using free API tiers.
 
-[![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com)
+[![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com)
 [![Orleans](https://img.shields.io/badge/Orleans-9.x-0078D4?style=flat-square)](https://learn.microsoft.com/dotnet/orleans)
 [![MCP](https://img.shields.io/badge/MCP-C%23%20SDK-00C9A7?style=flat-square)](https://github.com/modelcontextprotocol/csharp-sdk)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
@@ -53,6 +53,10 @@ Orleans Silo (in-process)
        └── Groq / Llama3-70B        (fallback — free tier)
 ```
 
+<p align="center">
+  <img src="yassi_architecture_overview.svg" alt="Architecture Overview" width="100%" />
+</p>
+
 ---
 
 ## 📁 Project Structure
@@ -79,6 +83,10 @@ MyCustomGPT/
 └── MyCustomGPT.Agents/           # Agent helpers
     └── McpClientFactory.cs
 ```
+
+<p align="center">
+  <img src="yassi_solution_structure.svg" alt="Solution Structure" width="100%" />
+</p>
 
 ---
 
@@ -245,4 +253,4 @@ Pull requests welcome. For major changes, please open an issue first.
 
 ---
 
-*Built with ❤️ using .NET 9, Orleans 9, MCP C# SDK, and free LLM APIs.*
+*Built with ❤️ using .NET 10, Orleans 9, MCP C# SDK, and free LLM APIs.*
