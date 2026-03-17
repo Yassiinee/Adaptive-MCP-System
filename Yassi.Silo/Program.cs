@@ -1,6 +1,10 @@
 using Orleans.Configuration;
 
-var host = Host.CreateDefaultBuilder(args)
+internal class Program
+{
+    private static async Task Main(string[] args)
+    {
+        IHost host = Host.CreateDefaultBuilder(args)
     .UseOrleans(silo =>
     {
         silo
@@ -15,4 +19,6 @@ var host = Host.CreateDefaultBuilder(args)
     })
     .Build();
 
-await host.RunAsync();
+        await host.RunAsync();
+    }
+}

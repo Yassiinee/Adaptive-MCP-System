@@ -1,6 +1,6 @@
-﻿using ModelContextProtocol.Server;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Net.Http.Json;
+using ModelContextProtocol.Server;
 
 namespace Yassi.Mcp;
 
@@ -13,16 +13,15 @@ public class BraveSearchTool(HttpClient http, string apiKey)
         [Description("Search query")] string query,
         CancellationToken ct = default)
     {
-        using var req = new HttpRequestMessage(HttpMethod.Get,
-            $"https://api.search.brave.com/res/v1/web/search?q={Uri.EscapeDataString(query)}&count=5");
+        using HttpRequestMessage req = new(HttpMethod.Get, $"https://api.search.brave.com/res/v1/web/search?q={Uri.EscapeDataString(query)}&count=5");
         req.Headers.Add("Accept", "application/json");
         req.Headers.Add("X-Subscription-Token", apiKey);
 
-        var resp = await http.SendAsync(req, ct);
+        HttpResponseMessage resp = await http.SendAsync(req, ct);
         resp.EnsureSuccessStatusCode();
 
-        var data = await resp.Content.ReadFromJsonAsync<BraveResult>(cancellationToken: ct);
-        var results = data?.Web?.Results ?? [];
+        BraveResult? data = await resp.Content.ReadFromJsonAsync<BraveResult>(cancellationToken: ct);
+        List<BraveItem> results = data?.Web?.Results ?? [];
 
         return string.Join("\n\n", results.Select(r => $"**{r.Title}**\n{r.Description}\n{r.Url}"));
     }

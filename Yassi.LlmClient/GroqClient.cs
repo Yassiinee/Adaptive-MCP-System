@@ -25,7 +25,7 @@ public class GroqClient(HttpClient http, string apiKey, string model = "llama3-8
         HttpResponseMessage resp = await http.SendAsync(req, ct);
         resp.EnsureSuccessStatusCode();
 
-        var result = await resp.Content.ReadFromJsonAsync<GroqResponse>(cancellationToken: ct);
+        GroqResponse? result = await resp.Content.ReadFromJsonAsync<GroqResponse>(cancellationToken: ct);
         return result!.Choices[0].Message.Content;
     }
 }

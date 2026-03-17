@@ -12,14 +12,14 @@ public class SearchAgent(BraveSearchTool search, GroqClient llm)
         CancellationToken ct = default)
     {
         // Step 1: search the web
-        var searchResults = await search.SearchAsync(userMessage, ct);
+        string searchResults = await search.SearchAsync(userMessage, ct);
 
         // Step 2: ask the LLM to synthesize using search results
-        var messages = new List<(string role, string content)>
+        List<(string role, string content)> messages = new()
         {
             ("system", "You are Yassi. Use the search results below to answer the question.\n\n" + searchResults)
         };
-        foreach (var m in history.TakeLast(6))
+        foreach (ChatMessage? m in history.TakeLast(6))
             messages.Add((m.Role, m.Content));
         messages.Add(("user", userMessage));
 

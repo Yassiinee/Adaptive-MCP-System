@@ -11,14 +11,14 @@ public class OllamaClient(HttpClient http, string model = "llama3")
         CancellationToken ct = default)
     {
         // Build single prompt from history
-        var prompt = string.Join("\n", messages.Select(m => $"{m.role}: {m.content}"));
+        string prompt = string.Join("\n", messages.Select(m => $"{m.role}: {m.content}"));
 
         var body = new { model, prompt, stream = false };
 
-        var resp = await http.PostAsJsonAsync("http://localhost:11434/api/generate", body, ct);
+        HttpResponseMessage resp = await http.PostAsJsonAsync("http://localhost:11434/api/generate", body, ct);
         resp.EnsureSuccessStatusCode();
 
-        var result = await resp.Content.ReadFromJsonAsync<OllamaResponse>(cancellationToken: ct);
+        OllamaResponse? result = await resp.Content.ReadFromJsonAsync<OllamaResponse>(cancellationToken: ct);
         return result!.Response;
     }
 }

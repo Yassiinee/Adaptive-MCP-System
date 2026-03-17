@@ -15,11 +15,11 @@ public class OrchestratorService(
     public async Task<AgentResponse> HandleAsync(AgentRequest request, CancellationToken ct = default)
     {
         // 1. Load history from Orleans grain
-        var grain = orleans.GetGrain<IChatGrain>(request.ConversationId);
-        var history = await grain.GetHistoryAsync();
+        IChatGrain grain = orleans.GetGrain<IChatGrain>(request.ConversationId);
+        IReadOnlyList<ChatMessage> history = await grain.GetHistoryAsync();
 
         // 2. Decide which agent to use (simple keyword routing — replace with SK planner)
-        var lower = request.UserMessage.ToLowerInvariant();
+        string lower = request.UserMessage.ToLowerInvariant();
         string agentName;
         string reply;
 
@@ -36,13 +36,13 @@ public class OrchestratorService(
         else
         {
             // Default: direct LLM via Semantic Kernel
-            var chat = kernel.GetRequiredService<IChatCompletionService>();
-            var chatHistory = new ChatHistory("You are Yassi, a helpful AI assistant.");
-            foreach (var m in history)
+            IChatCompletionService chat = kernel.GetRequiredService<IChatCompletionService>();
+            ChatHistory chatHistory = new("You are Yassi, a helpful AI assistant.");
+            foreach (ChatMessage m in history)
                 chatHistory.AddMessage(new AuthorRole(m.Role), m.Content);
             chatHistory.AddUserMessage(request.UserMessage);
 
-            var result = await chat.GetChatMessageContentAsync(chatHistory, cancellationToken: ct);
+            ChatMessageContent result = await chat.GetChatMessageContentAsync(chatHistory, cancellationToken: ct);
             reply = result.Content ?? "(no response)";
             agentName = "DirectLLM";
         }

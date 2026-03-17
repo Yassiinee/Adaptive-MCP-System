@@ -1,77 +1,85 @@
-using Orleans;
+using Microsoft.SemanticKernel;
 using Orleans.Configuration;
 using Yassi.Agents;
+using Yassi.Contracts;
 using Yassi.LlmClient;
 using Yassi.Mcp;
 using Yassi.Orchestrator;
-using Microsoft.SemanticKernel;
 
-var builder = WebApplication.CreateBuilder(args);
+namespace Yassi.Api;
 
-// ── Config ──
-var groqKey = builder.Configuration["Groq:ApiKey"]!;
-var braveKey = builder.Configuration["Brave:ApiKey"]!;
-
-// ── Orleans Client ──
-builder.Host.UseOrleansClient(client =>
+public partial class Program
 {
-    client.UseLocalhostClustering();
-    client.Configure<ClusterOptions>(o =>
+    private static void Main(string[] args)
     {
-        o.ClusterId = "yassi-dev";
-        o.ServiceId = "YassiService";
-    });
-});
+        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// ── HTTP clients ──
-builder.Services.AddHttpClient<GroqClient>();
-builder.Services.AddHttpClient<BraveSearchTool>();
+        // ── Config ──
+        string groqKey = builder.Configuration["Groq:ApiKey"]!;
+        string braveKey = builder.Configuration["Brave:ApiKey"]!;
 
-// ── App services ──
-builder.Services.AddSingleton(sp =>
-    new GroqClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient(), groqKey));
+        // ── Orleans Client ──
+        builder.Host.UseOrleansClient(client =>
+        {
+            client.UseLocalhostClustering();
+            client.Configure<ClusterOptions>(o =>
+            {
+                o.ClusterId = "yassi-dev";
+                o.ServiceId = "YassiService";
+            });
+        });
 
-builder.Services.AddSingleton(sp =>
-    new BraveSearchTool(sp.GetRequiredService<IHttpClientFactory>().CreateClient(), braveKey));
+        // ── HTTP clients ──
+        builder.Services.AddHttpClient<GroqClient>();
+        builder.Services.AddHttpClient<BraveSearchTool>();
 
-builder.Services.AddSingleton<SearchAgent>();
-builder.Services.AddSingleton<CodeAgent>();
-builder.Services.AddSingleton<OrchestratorService>();
+        // ── App services ──
+        builder.Services.AddSingleton(sp =>
+            new GroqClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient(), groqKey));
 
-// ── Semantic Kernel (Groq is OpenAI-compatible) ──
-builder.Services.AddSingleton(sp =>
-{
-    var http = sp.GetRequiredService<IHttpClientFactory>().CreateClient();
-    return Kernel.CreateBuilder()
-        .AddOpenAIChatCompletion(
-            modelId: "llama3-8b-8192",
-            apiKey: groqKey,
-            httpClient: http,
-            endpoint: new Uri("https://api.groq.com/openai/v1"))
-        .Build();
-});
+        builder.Services.AddSingleton(sp =>
+            new BraveSearchTool(sp.GetRequiredService<IHttpClientFactory>().CreateClient(), braveKey));
 
-builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
-    p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+        builder.Services.AddSingleton<SearchAgent>();
+        builder.Services.AddSingleton<CodeAgent>();
+        builder.Services.AddSingleton<OrchestratorService>();
 
-var app = builder.Build();
-app.UseCors();
+        // ── Semantic Kernel (Groq is OpenAI-compatible) ──
+        builder.Services.AddSingleton(sp =>
+        {
+            HttpClient http = sp.GetRequiredService<IHttpClientFactory>().CreateClient();
+            return Kernel.CreateBuilder()
+                .AddOpenAIChatCompletion(
+                    modelId: "llama3-8b-8192",
+                    apiKey: groqKey,
+                    httpClient: http,
+                    endpoint: new Uri("https://api.groq.com/openai/v1"))
+                .Build();
+        });
 
-// ── Chat endpoint ──
-app.MapPost("/chat", async (ChatRequest req, OrchestratorService orchestrator, CancellationToken ct) =>
-{
-    var agentReq = new Yassi.Contracts.AgentRequest(
-        req.ConversationId ?? Guid.NewGuid().ToString(),
-        req.Message,
-        []);
+        builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
+            p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
-    var response = await orchestrator.HandleAsync(agentReq, ct);
-    return Results.Ok(response);
-});
+        WebApplication app = builder.Build();
+        app.UseCors();
 
-// ── Health check ──
-app.MapGet("/health", () => "Yassi is alive");
+        // ── Chat endpoint ──
+        app.MapPost("/chat", async (ChatRequest req, OrchestratorService orchestrator, CancellationToken ct) =>
+        {
+            AgentRequest agentReq = new(
+                req.ConversationId ?? Guid.NewGuid().ToString(),
+                req.Message,
+                []);
 
-app.Run();
+            AgentResponse response = await orchestrator.HandleAsync(agentReq, ct);
+            return Results.Ok(response);
+        });
 
-record ChatRequest(string Message, string? ConversationId);
+        // ── Health check ──
+        app.MapGet("/health", () => "Yassi is alive");
+
+        app.Run();
+    }
+}
+
+internal record ChatRequest(string Message, string? ConversationId);

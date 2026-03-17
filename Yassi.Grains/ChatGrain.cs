@@ -37,7 +37,8 @@ public class ChatGrain : Grain, IChatGrain
 }
 
 [GenerateSerializer]
+[Alias("Yassi.Grains.ConversationState")]
 public class ConversationState
 {
-    [Id(0)] public List<ChatMessage> Messages { get; set; } = new();
+    [Id(0)] public List<ChatMessage> Messages { get; set; } = [];
 }

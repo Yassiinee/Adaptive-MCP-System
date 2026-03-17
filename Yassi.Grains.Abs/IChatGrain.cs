@@ -1,11 +1,10 @@
-﻿using Orleans;
-using Yassi.Contracts;
+﻿using Yassi.Contracts;
 
 namespace Yassi.Grains.Abs;
 
 public interface IChatGrain : IGrainWithStringKey
 {
-    Task<IReadOnlyList<ChatMessage>> GetHistoryAsync();
-    Task AddMessageAsync(ChatMessage message);
-    Task ClearAsync();
+    public Task<IReadOnlyList<ChatMessage>> GetHistoryAsync();
+    public Task AddMessageAsync(ChatMessage message);
+    public Task ClearAsync();
 }
