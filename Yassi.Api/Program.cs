@@ -17,6 +17,8 @@ public partial class Program
         // ── Config ──
         string groqKey = builder.Configuration["Groq:ApiKey"]!;
         string braveKey = builder.Configuration["Brave:ApiKey"]!;
+        string serperKey = builder.Configuration["Serper:ApiKey"]!;
+        string tavilyKey = builder.Configuration["Tavily:ApiKey"]!;
 
         // ── Orleans Client ──
         builder.Host.UseOrleansClient(client =>
@@ -40,7 +42,19 @@ public partial class Program
         builder.Services.AddSingleton(sp =>
             new BraveSearchTool(sp.GetRequiredService<IHttpClientFactory>().CreateClient(), braveKey));
 
-        builder.Services.AddSingleton<SearchAgent>();
+        builder.Services.AddSingleton(sp =>
+            new SerperSearchTool(sp.GetRequiredService<IHttpClientFactory>().CreateClient(), serperKey));
+
+        builder.Services.AddSingleton(sp =>
+            new TavilySearchTool(sp.GetRequiredService<IHttpClientFactory>().CreateClient(), tavilyKey));
+
+        builder.Services.AddSingleton<DuckDuckGoTool>();  // no key needed
+
+        builder.Services.AddSingleton<SearchAgent>(sp =>
+            new SearchAgent(
+                sp.GetRequiredService<TavilySearchTool>(),
+                sp.GetRequiredService<GroqClient>()));
+
         builder.Services.AddSingleton<CodeAgent>();
         builder.Services.AddSingleton<OrchestratorService>();
 

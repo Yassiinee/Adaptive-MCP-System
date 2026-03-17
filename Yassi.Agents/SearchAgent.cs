@@ -4,7 +4,7 @@ using Yassi.Mcp;
 
 namespace Yassi.Agents;
 
-public class SearchAgent(BraveSearchTool search, GroqClient llm)
+public class SearchAgent(TavilySearchTool search, GroqClient llm)
 {
     public async Task<string> RunAsync(
         string userMessage,
