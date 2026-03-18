@@ -11,32 +11,48 @@ public class GroqClient(HttpClient http, string apiKey, string model = "llama3-8
         IEnumerable<(string role, string content)> messages,
         CancellationToken ct = default)
     {
-        var body = new
-        {
+        GroqRequest body = new(
             model,
-            messages = messages.Select(m => new { role = m.role, content = m.content }),
-            max_tokens = 1024
-        };
+            messages.Select(m => new GroqRequestMessage(m.role, m.content)).ToList(),
+            1024
+        );
 
         using HttpRequestMessage req = new(HttpMethod.Post, "https://api.groq.com/openai/v1/chat/completions");
         req.Headers.Add("Authorization", $"Bearer {apiKey}");
-        req.Content = JsonContent.Create(body);
+        req.Content = JsonContent.Create(body, GroqJsonContext.Default.GroqRequest);
 
         HttpResponseMessage resp = await http.SendAsync(req, ct);
         resp.EnsureSuccessStatusCode();
 
-        GroqResponse? result = await resp.Content.ReadFromJsonAsync<GroqResponse>(cancellationToken: ct);
+        GroqResponse? result = await resp.Content.ReadFromJsonAsync(GroqJsonContext.Default.GroqResponse, cancellationToken: ct);
+
         return result!.Choices[0].Message.Content;
     }
 }
 
 // ── Minimal response models ──
-file record GroqResponse(
+internal record GroqResponse(
     [property: JsonPropertyName("choices")] List<GroqChoice> Choices
 );
-file record GroqChoice(
+internal record GroqChoice(
     [property: JsonPropertyName("message")] GroqMessage Message
 );
-file record GroqMessage(
+internal record GroqMessage(
     [property: JsonPropertyName("content")] string Content
 );
+
+internal record GroqRequest(
+    [property: JsonPropertyName("model")] string Model,
+    [property: JsonPropertyName("messages")] List<GroqRequestMessage> Messages,
+    [property: JsonPropertyName("max_tokens")] int MaxTokens
+);
+internal record GroqRequestMessage(
+    [property: JsonPropertyName("role")] string Role,
+    [property: JsonPropertyName("content")] string Content
+);
+
+[JsonSerializable(typeof(GroqRequest))]
+[JsonSerializable(typeof(GroqResponse))]
+internal partial class GroqJsonContext : JsonSerializerContext
+{
+}

@@ -13,19 +13,13 @@ public class TavilySearchTool(HttpClient http, string apiKey)
         [Description("Search query")] string query,
         CancellationToken ct = default)
     {
-        var body = new
-        {
-            api_key = apiKey,
-            query,
-            max_results = 5,
-            include_answer = true   // Tavily gives a pre-summarised answer too
-        };
+        TavilyRequest body = new(apiKey, query, 5, true);
 
         HttpResponseMessage resp = await http.PostAsJsonAsync(
-            "https://api.tavily.com/search", body, ct);
+            "https://api.tavily.com/search", body, TavilyJsonContext.Default.TavilyRequest, ct);
         resp.EnsureSuccessStatusCode();
 
-        TavilyResult? data = await resp.Content.ReadFromJsonAsync<TavilyResult>(cancellationToken: ct);
+        TavilyResult? data = await resp.Content.ReadFromJsonAsync(TavilyJsonContext.Default.TavilyResult, cancellationToken: ct);
 
         string summary = string.IsNullOrEmpty(data?.Answer) ? "" : $"**Summary:** {data.Answer}\n\n";
         string links = string.Join("\n\n", (data?.Results ?? [])
@@ -35,12 +29,25 @@ public class TavilySearchTool(HttpClient http, string apiKey)
     }
 }
 
-file record TavilyResult(
+internal record TavilyResult(
     [property: JsonPropertyName("answer")] string? Answer,
     [property: JsonPropertyName("results")] List<TavilyItem> Results
 );
-file record TavilyItem(
+internal record TavilyItem(
     [property: JsonPropertyName("title")] string Title,
     [property: JsonPropertyName("content")] string Content,
     [property: JsonPropertyName("url")] string Url
 );
+
+internal record TavilyRequest(
+    [property: JsonPropertyName("api_key")] string ApiKey,
+    [property: JsonPropertyName("query")] string Query,
+    [property: JsonPropertyName("max_results")] int MaxResults,
+    [property: JsonPropertyName("include_answer")] bool IncludeAnswer
+);
+
+[JsonSerializable(typeof(TavilyRequest))]
+[JsonSerializable(typeof(TavilyResult))]
+internal partial class TavilyJsonContext : JsonSerializerContext
+{
+}

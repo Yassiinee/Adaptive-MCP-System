@@ -13,17 +13,17 @@ public class SerperSearchTool(HttpClient http, string apiKey)
         [Description("Search query")] string query,
         CancellationToken ct = default)
     {
-        var body = new { q = query, num = 5 };
+        var body = new SerperRequest(query, 5);
 
         using HttpRequestMessage req = new(HttpMethod.Post,
             "https://google.serper.dev/search");
         req.Headers.Add("X-API-KEY", apiKey);
-        req.Content = JsonContent.Create(body);
+        req.Content = JsonContent.Create(body, SerperJsonContext.Default.SerperRequest);
 
         HttpResponseMessage resp = await http.SendAsync(req, ct);
         resp.EnsureSuccessStatusCode();
 
-        SerperResult? data = await resp.Content.ReadFromJsonAsync<SerperResult>(cancellationToken: ct);
+        SerperResult? data = await resp.Content.ReadFromJsonAsync(SerperJsonContext.Default.SerperResult, cancellationToken: ct);
         List<SerperItem> items = data?.Organic ?? [];
 
         return string.Join("\n\n", items.Select(r =>
@@ -31,9 +31,20 @@ public class SerperSearchTool(HttpClient http, string apiKey)
     }
 }
 
-file record SerperResult([property: JsonPropertyName("organic")] List<SerperItem> Organic);
-file record SerperItem(
+internal record SerperResult([property: JsonPropertyName("organic")] List<SerperItem> Organic);
+internal record SerperItem(
     [property: JsonPropertyName("title")] string Title,
     [property: JsonPropertyName("snippet")] string Snippet,
     [property: JsonPropertyName("link")] string Link
 );
+
+internal record SerperRequest(
+    [property: JsonPropertyName("q")] string Q,
+    [property: JsonPropertyName("num")] int Num
+);
+
+[JsonSerializable(typeof(SerperRequest))]
+[JsonSerializable(typeof(SerperResult))]
+internal partial class SerperJsonContext : JsonSerializerContext
+{
+}

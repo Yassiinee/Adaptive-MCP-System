@@ -14,6 +14,8 @@ public partial class Program
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+        builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, ApiJsonContext.Default));
+
         // ── Config ──
         string groqKey = builder.Configuration["Groq:ApiKey"]!;
         string braveKey = builder.Configuration["Brave:ApiKey"]!;
@@ -86,7 +88,7 @@ public partial class Program
                 []);
 
             AgentResponse response = await orchestrator.HandleAsync(agentReq, ct);
-            return Results.Ok(response);
+            return Results.Json(response, ApiJsonContext.Default.AgentResponse);
         });
 
         // ── Health check ──
@@ -94,6 +96,14 @@ public partial class Program
 
         app.Run();
     }
+}
+
+[System.Text.Json.Serialization.JsonSerializable(typeof(ChatRequest))]
+[System.Text.Json.Serialization.JsonSerializable(typeof(AgentResponse))]
+[System.Text.Json.Serialization.JsonSerializable(typeof(AgentRequest))]
+[System.Text.Json.Serialization.JsonSerializable(typeof(ChatMessage))]
+internal partial class ApiJsonContext : System.Text.Json.Serialization.JsonSerializerContext
+{
 }
 
 internal record ChatRequest(string Message, string? ConversationId);
