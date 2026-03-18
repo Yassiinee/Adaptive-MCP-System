@@ -48,8 +48,10 @@ public class OrchestratorService(
         }
 
         // 3. Persist both messages to Orleans grain
-        await grain.AddMessageAsync(new ChatMessage("user", request.UserMessage, DateTimeOffset.UtcNow));
-        await grain.AddMessageAsync(new ChatMessage("assistant", reply, DateTimeOffset.UtcNow));
+        await Task.WhenAll(
+            grain.AddMessageAsync(new ChatMessage("user", request.UserMessage, DateTimeOffset.UtcNow)),
+            grain.AddMessageAsync(new ChatMessage("assistant", reply, DateTimeOffset.UtcNow))
+        );
 
         return new AgentResponse(request.ConversationId, reply, agentName, false);
     }
